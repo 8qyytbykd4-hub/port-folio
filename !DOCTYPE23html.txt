@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0A0A0A;
+            --accent: #ff0000; 
+            --op-paper: #e9d5a3;
+            --op-ink: #3e2723;
+            --text: #F7F5F0;
+            --border: #2D2D2A;
+            --card-bg: #141414;
+        }
+
+        body { 
+            margin: 0; font-family: 'Syne', sans-serif; background: var(--bg); color: var(--text);
+            overflow: hidden; cursor: none;
+        }
+
+        /* ── CURSEUR & PARTICULES ── */
+        #custom-cursor {
+            position: fixed; width: 10px; height: 10px; background: var(--accent);
+            border-radius: 50%; pointer-events: none; z-index: 10005;
+            box-shadow: 0 0 15px var(--accent), 0 0 30px var(--accent);
+        }
+        .haki-particle {
+            position: fixed; pointer-events: none;
+            width: 4px; height: 4px; background: var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+            border-radius: 50%; z-index: 10004;
+        }
+
+        /* ── IMPACT HAKI ── */
+        .pression-spirituelle {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 0; height: 0; background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+            border-radius: 50%; opacity: 0; pointer-events: none; z-index: 10001;
+        }
+        @keyframes reiatsu {
+            0% { width: 0; height: 0; opacity: 1; filter: blur(5px); }
+            100% { width: 300vw; height: 300vw; opacity: 0; filter: blur(50px); }
+        }
+        .shake { animation: heavyShake 0.3s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes heavyShake {
+            0%, 100% { transform: translate(0,0); }
+            20% { transform: translate(-10px, 10px); }
+            40% { transform: translate(-10px, -10px); }
+            60% { transform: translate(10px, 10px); }
+            80% { transform: translate(10px, -10px); }
+        }
+
+        /* ── CRÂNE D'ACCUEIL ── */
+        .shape-skull {
+            position: absolute; top: 15%; right: 10%; font-size: 22rem;
+            z-index: 1; opacity: 0.07; pointer-events: none; color: white;
+            animation: skull-float 6s infinite ease-in-out;
+        }
+        @keyframes skull-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-25px); } }
+
+        /* ── CONTENEUR IMAGE PLEIN ÉCRAN (SANS CADRE) ── */
+        #wanted-container {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
+            display: none; z-index: 9999;
+            width: 350px; /* Largeur de l'image lors de l'animation */
+        }
+        .poster-img { 
+            width: 100%; height: auto; border-radius: 5px;
+            object-fit: contain; display: block;
+        }
+
+        /* ── NAVIGATION ── */
+        .nav { display: flex; justify-content: space-between; padding: 2rem 5%; border-bottom: 1px solid var(--border); position: relative; z-index: 10; }
+        .nav-link { color: #888; text-decoration: none; cursor: pointer; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; transition: 0.3s; }
+        .nav-link:hover { color: var(--accent); }
+
+        /* ── PAGES ── */
+        .page { display: none; padding: 5vh 10%; position: relative; height: 80vh; overflow-y: auto; scrollbar-width: none; z-index: 5; }
+        .page::-webkit-scrollbar { display: none; }
+        .page.active { display: block; }
+
+        .title-huge { font-size: clamp(3rem, 8vw, 5rem); font-weight: 800; line-height: 0.85; margin-bottom: 1rem; position: relative; z-index: 2; }
+        
+        /* ── STYLE PROFIL RESTAURÉ ── */
+        .grid-profil { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 4rem; margin-top: 3rem; }
+        .bio-text { font-size: 1.1rem; line-height: 1.6; color: #BBB; margin-bottom: 1.5rem; }
+        .bio-text b { color: var(--text); }
+        
+        .exp-container { margin-top: 2rem; position: relative; }
+        .exp-item { border-left: 2px solid var(--accent); padding-left: 25px; position: relative; margin-bottom: 30px; }
+        .exp-item::before { content: ''; position: absolute; left: -7px; top: 0; width: 12px; height: 12px; background: var(--accent); border-radius: 50%; }
+        .exp-role { font-weight: 800; font-size: 1.2rem; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .exp-company { font-family: 'DM Mono'; color: var(--accent); font-size: 0.9rem; margin-bottom: 10px; }
+        .exp-desc { color: #888; font-size: 0.95rem; line-height: 1.4; }
+        
+        .certif-link { 
+            display: flex; align-items: center; background: #111; padding: 15px 20px; 
+            border-radius: 4px; margin-bottom: 15px; border: 1px solid var(--border);
+            text-decoration: none; color: white; transition: 0.4s;
+        }
+        .certif-link:hover { border-color: var(--accent); transform: translateY(-5px); }
+
+        /* ── STYLE PROJETS (E5) ── */
+        .projects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 3rem; }
+        .project-card { 
+            background: var(--card-bg); border: 1px solid var(--border); padding: 2rem; 
+            transition: 0.4s; position: relative; overflow: hidden;
+        }
+        .project-card:hover { border-color: var(--accent); transform: translateY(-10px); }
+        .project-num { font-family: 'DM Mono'; color: var(--accent); font-size: 0.9rem; margin-bottom: 1rem; display: block; }
+        .project-title { font-weight: 800; font-size: 1.4rem; line-height: 1.2; margin-bottom: 1.5rem; min-height: 3.5rem; }
+        .project-btn {
+            display: inline-block; padding: 10px 20px; border: 1px solid var(--text); color: var(--text);
+            text-decoration: none; font-size: 0.8rem; font-weight: 600; transition: 0.3s;
+        }
+        .project-btn:hover { background: var(--text); color: black; }
+
+        .btn-action {
+            display: inline-block; padding: 1.2rem 2.5rem;
+            background: transparent; border: 2px solid var(--accent); color: var(--accent);
+            text-decoration: none; font-weight: 800; text-transform: uppercase;
+            transition: 0.3s; cursor: pointer; margin-top: 1rem; letter-spacing: 2px;
+        }
+        .btn-action:hover { background: var(--accent); color: white; box-shadow: 0 0 30px var(--accent); }
+
+        #news-coo { position: fixed; top: 20%; right: -200px; width: 150px; z-index: 10000; pointer-events: none; }
+    </style>
+</head>
+<body id="main-body">
+
+    <div id="custom-cursor"></div>
+    <div class="pression-spirituelle" id="haki-impact"></div>
+    <img id="news-coo" src="https://i.ibb.co/LpYf2G9/news-coo.png" alt="News Coo">
+
+    <div id="wanted-container">
+        <img id="poster-img" src="" class="poster-img">
+    </div>
+
+    <nav class="nav">
+        <div style="font-family:'DM Serif Display'; font-size: 1.8rem; color: var(--accent);">PRÉCIEUX.</div>
+        <div style="display:flex; gap:30px;">
+            <a class="nav-link" onclick="showFullImageOnly('home', 'téléchargement (2).jpg')">Accueil</a>
+            <a class="nav-link" onclick="showFullImageOnly('profil', '550x807.jpg')">Profil</a>
+            <a class="nav-link" onclick="showFullImageOnly('projects', '7c5c09d1fa4c8cc545a5f26e4b7af135.jpg')">Projets</a>
+            <a class="nav-link" onclick="showFullImageOnly('e6', 'robin.jpg')">E6</a>
+            <a class="nav-link" onclick="showFullImageOnly('veille', 'usopp.jpg')">Veille</a>
+        </div>
+    </nav>
+
+    <!-- ACCUEIL -->
+    <section id="home" class="page active">
+        <div class="shape-skull">☠</div>
+        <h1 class="title-huge">PRÉCIEUX<br>KIAMPANA.</h1>
+        <p style="font-family: 'DM Mono'; color: var(--accent); margin-bottom: 0.5rem; font-size: 1.2rem;">[ ÉTUDIANT EN BTS SIO ]</p>
+        <p style="font-family: 'DM Mono'; color: #888; margin-bottom: 2rem;">ADMIN SYSTEME & SECURITE</p>
+        <button class="btn-action" style="border-color: white; color: white;" onclick="showFullImageOnly('profil', '550x807.jpg')">DÉCOUVRIR LE PROFIL</button>
+    </section>
+
+    <!-- PROFIL RESTAURÉ -->
+    <section id="profil" class="page">
+        <h1 class="title-huge">PROFIL_<em>19Y</em></h1>
+        <div class="grid-profil">
+            <div>
+                <p class="bio-text">Je m'appelle <b>Kiampana Précieux</b>, j'ai 19 ans. Passionné par l'informatique depuis mon enfance, j'ai choisi le BTS SIO pour me spécialiser dans la cybersécurité.</p>
+                <a href="CV_PRECIEUX.pdf" target="_blank" class="btn-action">TÉLÉCHARGER CV</a>
+                <div class="exp-container">
+                    <h3 style="text-transform: uppercase; margin-top: 2rem;">Parcours Pro</h3>
+                    <div class="exp-item">
+                        <div class="exp-role">Stagiaire Réseau</div>
+                        <div class="exp-company">[TON ENTREPRISE] // 2024</div>
+                        <div class="exp-desc">Configuration de matériel Cisco et gestion des accès sécurisés.</div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <h3 style="text-transform: uppercase; color: var(--accent);">Accréditations</h3>
+                <a href="NetworkingBasicsUpdate20251204-31-28x1h0.pdf" target="_blank" class="certif-link">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/64/Cisco_logo.svg" width="25" style="margin-right:15px;">
+                    <div><div style="font-weight: 800;">Networking Basics</div></div>
+                </a>
+                <a href="certif_cyber.pdf" target="_blank" class="certif-link">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/64/Cisco_logo.svg" width="25" style="margin-right:15px;">
+                    <div><div style="font-weight: 800;">Intro to Cybersecurity</div></div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- PROJETS E5 RESTAURÉ -->
+    <section id="projects" class="page">
+        <h1 class="title-huge">DOSSIER_<em>E5</em></h1>
+        <div class="projects-grid">
+            <div class="project-card">
+                <span class="project-num">#01_VIRTUALISATION</span>
+                <div class="project-title">Virtualisation d'un serveur physique et mise en place de fichier sécurisé</div>
+                <a href="Projet professionnel1 (5) (4).pdf" target="_blank" class="project-btn">VOIR LA DOCUMENTATION</a>
+            </div>
+            <div class="project-card">
+                <span class="project-num">#02_SUPERVISION</span>
+                <div class="project-title">Mise en œuvre d'une solution de supervision centralisée (Zabbix)</div>
+                <a href="Projet_Zabbix.pdf" target="_blank" class="project-btn">VOIR LA DOCUMENTATION</a>
+            </div>
+        </div>
+    </section>
+
+    <section id="e6" class="page"><h1 class="title-huge">DOSSIER_<em>E6</em></h1></section>
+    <section id="veille" class="page"><h1 class="title-huge">VEILLE_<em>TECH</em></h1></section>
+
+    <script>
+        const cursor = document.getElementById('custom-cursor');
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+            const p = document.createElement('div');
+            p.className = 'haki-particle';
+            p.style.left = e.clientX + 'px';
+            p.style.top = e.clientY + 'px';
+            document.body.appendChild(p);
+            setTimeout(() => p.remove(), 500);
+        });
+
+        function showFullImageOnly(pageId, imgUrl) {
+            document.getElementById('poster-img').src = imgUrl;
+            triggerNewsAnimation(pageId);
+        }
+
+        function triggerNewsAnimation(pageId) {
+            const impact = document.getElementById('haki-impact');
+            const coo = document.getElementById('news-coo');
+            const container = document.getElementById('wanted-container');
+            
+            impact.style.animation = 'none';
+            void impact.offsetWidth;
+            impact.style.animation = 'reiatsu 0.6s ease-out';
+            
+            document.getElementById('main-body').classList.add('shake');
+            setTimeout(() => document.getElementById('main-body').classList.remove('shake'), 400);
+
+            coo.style.transition = "all 1.5s linear";
+            coo.style.right = "120%";
+
+            setTimeout(() => {
+                container.style.display = 'block';
+                container.animate([{ transform: 'translate(-50%, -50%) scale(0)', opacity: 0 }, { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 }], { duration: 500, fill: 'forwards' });
+                
+                setTimeout(() => {
+                    container.animate([{ opacity: 1 }, { opacity: 0, transform: 'translate(-50%, -50%) scale(0)' }], { duration: 400, fill: 'forwards' });
+                    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                    document.getElementById(pageId).classList.add('active');
+                    
+                    setTimeout(() => {
+                        container.style.display = 'none';
+                        coo.style.transition = "none";
+                        coo.style.right = "-200px";
+                    }, 400);
+                }, 1800);
+            }, 600);
+        }
+    </script>
+</body>
+</html>
